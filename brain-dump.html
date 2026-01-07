@@ -1,0 +1,2288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📅 Meu Dia - Sara</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --header: #2D5A7B;
+            --header-light: #3d7a9b;
+            --hoje: #E8F4E8;
+            --hoje-border: #4CAF50;
+            --semana: #FFF8E7;
+            --semana-border: #FFA726;
+            --blocked: #F5E6E6;
+            --blocked-border: #EF5350;
+            --brag: #E8E8F4;
+            --brag-border: #7E57C2;
+            --white: #FFFFFF;
+            --light-gray: #F5F5F5;
+            --text: #333333;
+            --text-muted: #666666;
+            --postit: #FFFACD;
+            --postit-border: #FFD700;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: var(--header);
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .date-display {
+            font-size: 1.1em;
+            color: var(--text-muted);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: var(--light-gray);
+            color: var(--text-muted);
+        }
+
+        .tab-btn.active {
+            background: var(--header);
+            color: white;
+            box-shadow: 0 4px 12px rgba(45, 90, 123, 0.3);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #e0e0e0;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Sections */
+        .section {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        .section-icon {
+            font-size: 1.5em;
+        }
+
+        .section-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: var(--header);
+        }
+
+        .section-subtitle {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        /* Brain Dump */
+        .brain-dump-container {
+            position: relative;
+        }
+
+        .brain-dump-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid var(--light-gray);
+            border-radius: 12px;
+            font-size: 1em;
+            font-family: inherit;
+            resize: vertical;
+            background: var(--light-gray);
+            transition: all 0.3s ease;
+        }
+
+        .brain-dump-textarea:focus {
+            outline: none;
+            border-color: var(--header);
+            background: white;
+        }
+
+        .audio-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .audio-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .audio-btn.record {
+            background: linear-gradient(135deg, #EF5350, #F44336);
+            color: white;
+        }
+
+        .audio-btn.record:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        .audio-btn.record.recording {
+            animation: pulse 1s infinite;
+            background: linear-gradient(135deg, #C62828, #B71C1C);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .audio-btn.clear {
+            background: var(--light-gray);
+            color: var(--text-muted);
+        }
+
+        .audio-btn.clear:hover {
+            background: #e0e0e0;
+        }
+
+        .audio-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background: var(--light-gray);
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+
+        .audio-status.listening {
+            background: #FFEBEE;
+            color: #C62828;
+        }
+
+        /* Tasks */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .task-item.priority {
+            background: var(--hoje);
+            border-left: 4px solid var(--hoje-border);
+        }
+
+        .task-item.normal {
+            background: var(--light-gray);
+            border-left: 4px solid #9E9E9E;
+        }
+
+        .task-number {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 1.1em;
+            flex-shrink: 0;
+        }
+
+        .task-item.priority .task-number {
+            background: var(--hoje-border);
+            color: white;
+        }
+
+        .task-item.normal .task-number {
+            background: #9E9E9E;
+            color: white;
+        }
+
+        .task-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            background: rgba(255,255,255,0.7);
+            transition: all 0.3s ease;
+        }
+
+        .task-input:focus {
+            outline: none;
+            border-color: var(--header);
+            background: white;
+        }
+
+        .task-input.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .task-checkbox {
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            accent-color: var(--hoje-border);
+            flex-shrink: 0;
+        }
+
+        .task-hint {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-top: 10px;
+            padding-left: 10px;
+            border-left: 3px solid var(--hoje-border);
+        }
+
+        /* Post-it */
+        .postit {
+            background: var(--postit);
+            border: 3px solid var(--postit-border);
+            border-radius: 4px;
+            padding: 20px;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.15);
+            transform: rotate(-1deg);
+            transition: transform 0.3s ease;
+        }
+
+        .postit:hover {
+            transform: rotate(0deg) scale(1.02);
+        }
+
+        .postit-label {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .postit-input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            background: transparent;
+            font-size: 1.3em;
+            font-weight: 600;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            text-align: center;
+            color: var(--text);
+        }
+
+        .postit-input:focus {
+            outline: none;
+        }
+
+        /* Blocked Items */
+        .blocked-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .blocked-item {
+            display: flex;
+            gap: 10px;
+            padding: 12px;
+            background: var(--blocked);
+            border-left: 4px solid var(--blocked-border);
+            border-radius: 8px;
+        }
+
+        .blocked-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid transparent;
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-family: inherit;
+            background: rgba(255,255,255,0.7);
+        }
+
+        .blocked-input:focus {
+            outline: none;
+            border-color: var(--blocked-border);
+            background: white;
+        }
+
+        .blocked-input.who {
+            flex: 0.6;
+        }
+
+        /* Brag */
+        .brag-container {
+            background: var(--brag);
+            border-left: 4px solid var(--brag-border);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .brag-prefix {
+            font-size: 1em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .brag-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-size: 1.05em;
+            font-family: inherit;
+            background: rgba(255,255,255,0.7);
+        }
+
+        .brag-input:focus {
+            outline: none;
+            border-color: var(--brag-border);
+            background: white;
+        }
+
+        /* Weekly Tab */
+        .week-task-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: var(--semana);
+            border-left: 4px solid var(--semana-border);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .week-task-num {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--semana-border);
+            color: white;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 0.9em;
+            flex-shrink: 0;
+        }
+
+        .week-task-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid transparent;
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-family: inherit;
+            background: rgba(255,255,255,0.7);
+        }
+
+        .week-task-input:focus {
+            outline: none;
+            border-color: var(--semana-border);
+            background: white;
+        }
+
+        .week-task-date {
+            width: 120px;
+            padding: 8px;
+            border: 2px solid transparent;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-family: inherit;
+            background: rgba(255,255,255,0.7);
+        }
+
+        .week-task-date:focus {
+            outline: none;
+            border-color: var(--semana-border);
+        }
+
+        /* Checklist */
+        .checklist {
+            background: var(--light-gray);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .checklist-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: var(--header);
+        }
+
+        .checklist-label {
+            font-size: 0.95em;
+        }
+
+        /* Reminder */
+        .reminder {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--header), var(--header-light));
+            color: white;
+            border-radius: 12px;
+            font-size: 0.95em;
+            margin-top: 10px;
+        }
+
+        .reminder-icon {
+            font-size: 1.3em;
+            margin-right: 8px;
+        }
+
+        /* Save indicator */
+        .save-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: var(--hoje-border);
+            color: white;
+            border-radius: 25px;
+            font-size: 0.9em;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .save-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Brag List */
+        .brag-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .brag-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: var(--brag);
+            border-left: 4px solid var(--brag-border);
+            border-radius: 8px;
+        }
+
+        .brag-num {
+            font-weight: 700;
+            color: var(--brag-border);
+        }
+
+        .brag-item-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid transparent;
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-family: inherit;
+            background: rgba(255,255,255,0.7);
+        }
+
+        .brag-item-input:focus {
+            outline: none;
+            border-color: var(--brag-border);
+            background: white;
+        }
+
+        /* Reminder Banner */
+        .reminder-banner {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 15px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+            border: 2px solid #FFB74D;
+            border-radius: 12px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .reminder-banner.quinzenal {
+            background: linear-gradient(135deg, #E8EAF6, #C5CAE9);
+            border-color: #7986CB;
+        }
+
+        .reminder-banner-icon {
+            font-size: 1.5em;
+        }
+
+        .reminder-banner-text {
+            flex: 1;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .reminder-banner-btn {
+            padding: 8px 16px;
+            background: var(--header);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reminder-banner-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .reminder-banner-close {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        /* Calendar */
+        .calendar-container {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--header);
+            color: white;
+        }
+
+        .calendar-nav {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-nav:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .calendar-month {
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            padding: 10px;
+        }
+
+        .calendar-weekday {
+            text-align: center;
+            padding: 10px 5px;
+            font-weight: 600;
+            font-size: 0.8em;
+            color: var(--text-muted);
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            gap: 2px;
+        }
+
+        .calendar-day:hover {
+            background: var(--light-gray);
+        }
+
+        .calendar-day.other-month {
+            color: #ccc;
+        }
+
+        .calendar-day.today {
+            background: var(--header);
+            color: white;
+            font-weight: 700;
+        }
+
+        .calendar-day.has-data {
+            background: var(--hoje);
+        }
+
+        .calendar-day.today.has-data {
+            background: var(--header);
+        }
+
+        .calendar-day.friday {
+            border: 2px dashed var(--semana-border);
+        }
+
+        .calendar-day.review-day {
+            border: 2px solid var(--brag-border);
+        }
+
+        .day-indicators {
+            display: flex;
+            gap: 2px;
+            position: absolute;
+            bottom: 3px;
+        }
+
+        .day-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .day-dot.tasks {
+            background: var(--hoje-border);
+        }
+
+        .day-dot.brag {
+            background: var(--brag-border);
+        }
+
+        .calendar-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 15px;
+            border-top: 1px solid var(--light-gray);
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8em;
+            color: var(--text-muted);
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-box {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        /* Review Section */
+        .review-card {
+            background: linear-gradient(135deg, #E8EAF6, #C5CAE9);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .review-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--header);
+        }
+
+        .review-date {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        .feedback-item {
+            background: var(--white);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+
+        .feedback-label {
+            font-weight: 600;
+            color: var(--header);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feedback-description {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .rating-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .rating-label {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            min-width: 80px;
+        }
+
+        .rating-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .rating-btn {
+            width: 36px;
+            height: 36px;
+            border: 2px solid var(--light-gray);
+            border-radius: 50%;
+            background: white;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .rating-btn:hover {
+            border-color: var(--header);
+        }
+
+        .rating-btn.selected {
+            background: var(--header);
+            border-color: var(--header);
+            color: white;
+        }
+
+        .feedback-notes {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9em;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .feedback-notes:focus {
+            outline: none;
+            border-color: var(--header);
+        }
+
+        .review-history {
+            margin-top: 20px;
+        }
+
+        .history-item {
+            background: var(--white);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--brag-border);
+        }
+
+        .history-date {
+            font-weight: 600;
+            color: var(--header);
+            margin-bottom: 8px;
+        }
+
+        .history-scores {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .history-score {
+            font-size: 0.85em;
+            padding: 4px 10px;
+            background: var(--light-gray);
+            border-radius: 15px;
+        }
+
+        .save-review-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--brag-border), #9575CD);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .save-review-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(126, 87, 194, 0.3);
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--header);
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        /* Footer com Export/Import */
+        .footer-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border: 2px solid var(--light-gray);
+            border-radius: 25px;
+            background: var(--white);
+            color: var(--text-muted);
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .footer-btn:hover {
+            border-color: var(--header);
+            color: var(--header);
+            background: var(--light-gray);
+        }
+
+        .footer-btn.danger:hover {
+            border-color: var(--blocked-border);
+            color: var(--blocked-border);
+        }
+
+        .hidden-input {
+            display: none;
+        }
+
+        .footer-info {
+            text-align: center;
+            font-size: 0.8em;
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.6em;
+            }
+
+            .section {
+                padding: 15px;
+            }
+
+            .task-item {
+                flex-wrap: wrap;
+            }
+
+            .blocked-item {
+                flex-direction: column;
+            }
+
+            .blocked-input.who {
+                flex: 1;
+            }
+
+            .week-task-item {
+                flex-wrap: wrap;
+            }
+
+            .week-task-date {
+                width: 100%;
+            }
+
+            .tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .tab-btn {
+                width: 80%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📅 Meu Dia</h1>
+            <div class="date-display" id="dateDisplay"></div>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('daily')">Hoje</button>
+                <button class="tab-btn" onclick="switchTab('weekly')">Semana</button>
+                <button class="tab-btn" onclick="switchTab('progress')">Progresso</button>
+            </div>
+            
+            <!-- Reminder Banner -->
+            <div class="reminder-banner" id="reminderBanner" style="display: none;">
+                <span class="reminder-banner-icon" id="reminderIcon">🔔</span>
+                <span class="reminder-banner-text" id="reminderText"></span>
+                <button class="reminder-banner-btn" id="reminderAction" onclick="handleReminderAction()">Ver</button>
+                <button class="reminder-banner-close" onclick="dismissReminder()">✕</button>
+            </div>
+        </div>
+
+        <!-- Daily Tab -->
+        <div id="daily-tab" class="tab-content active">
+            <!-- Brain Dump -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-icon">🧠</span>
+                    <span class="section-title">Brain Dump Matinal</span>
+                    <span class="section-subtitle">5 min - despeje tudo!</span>
+                </div>
+                <div class="brain-dump-container">
+                    <textarea 
+                        id="brainDump" 
+                        class="brain-dump-textarea" 
+                        placeholder="Despeje aqui tudo que está na sua cabeça... tarefas, preocupações, ideias, qualquer coisa. Não organize, só tire de dentro!"
+                        oninput="saveData()"
+                    ></textarea>
+                    <div class="audio-controls">
+                        <button class="audio-btn record" id="recordBtn" onclick="toggleRecording()">
+                            <span id="recordIcon">🎤</span>
+                            <span id="recordText">Falar</span>
+                        </button>
+                        <button class="audio-btn clear" onclick="clearBrainDump()">
+                            🗑️ Limpar
+                        </button>
+                        <div class="audio-status" id="audioStatus">
+                            <span>🎙️</span>
+                            <span id="statusText">Clique em Falar para usar voz</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3 Tasks -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-icon">🎯</span>
+                    <span class="section-title">As 3 Tarefas do Dia</span>
+                    <span class="section-subtitle">Só 3!</span>
+                </div>
+                <div class="task-list">
+                    <div class="task-item priority">
+                        <div class="task-number">⭐</div>
+                        <input type="text" class="task-input" id="task1" placeholder="A tarefa mais importante (a que mais te dá ansiedade)" oninput="saveData()">
+                        <input type="checkbox" class="task-checkbox" id="check1" onchange="toggleTaskComplete(1); saveData()">
+                    </div>
+                    <div class="task-item normal">
+                        <div class="task-number">2</div>
+                        <input type="text" class="task-input" id="task2" placeholder="Segunda tarefa" oninput="saveData()">
+                        <input type="checkbox" class="task-checkbox" id="check2" onchange="toggleTaskComplete(2); saveData()">
+                    </div>
+                    <div class="task-item normal">
+                        <div class="task-number">3</div>
+                        <input type="text" class="task-input" id="task3" placeholder="Terceira tarefa" oninput="saveData()">
+                        <input type="checkbox" class="task-checkbox" id="check3" onchange="toggleTaskComplete(3); saveData()">
+                    </div>
+                </div>
+                <div class="task-hint">⭐ = Faça ela PRIMEIRO. É a que mais vai te dar alívio quando terminar.</div>
+            </div>
+
+            <!-- Post-it -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-icon">📌</span>
+                    <span class="section-title">Post-it Mental</span>
+                    <span class="section-subtitle">Só existe ESTA tarefa agora</span>
+                </div>
+                <div class="postit">
+                    <div class="postit-label">Agora eu estou fazendo:</div>
+                    <input type="text" class="postit-input" id="postit" placeholder="Uma coisa de cada vez..." oninput="saveData()">
+                </div>
+            </div>
+
+            <!-- Blocked -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-icon">🚫</span>
+                    <span class="section-title">Blocked / Esperando</span>
+                    <span class="section-subtitle">Tire da cabeça!</span>
+                </div>
+                <div class="blocked-list">
+                    <div class="blocked-item">
+                        <input type="text" class="blocked-input" id="blocked1" placeholder="O que está blocked..." oninput="saveData()">
+                        <input type="text" class="blocked-input who" id="blockedWho1" placeholder="Quem/o quê preciso" oninput="saveData()">
+                    </div>
+                    <div class="blocked-item">
+                        <input type="text" class="blocked-input" id="blocked2" placeholder="O que está blocked..." oninput="saveData()">
+                        <input type="text" class="blocked-input who" id="blockedWho2" placeholder="Quem/o quê preciso" oninput="saveData()">
+                    </div>
+                    <div class="blocked-item">
+                        <input type="text" class="blocked-input" id="blocked3" placeholder="O que está blocked..." oninput="saveData()">
+                        <input type="text" class="blocked-input who" id="blockedWho3" placeholder="Quem/o quê preciso" oninput="saveData()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Brag -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-icon">🏆</span>
+                    <span class="section-title">Vitória do Dia</span>
+                    <span class="section-subtitle">Preencha no fim do dia</span>
+                </div>
+                <div class="brag-container">
+                    <div class="brag-prefix">Hoje eu:</div>
+                    <input type="text" class="brag-input" id="bragDaily" placeholder="Pode ser pequena! Ex: 'Pedi ajuda quando travei', 'Mandei devolutiva parcial'..." oninput="saveData()">
+                </div>
+            </div>
+
+            <div class="reminder">
+                <span class="reminder-icon">💡</span>
+                Travou por mais de 30 min? LEVANTE A MÃO. Isso é eficiência, não fraqueza.
+            </div>
+        </div>
+
+        <!-- Weekly Tab -->
+        <div id="weekly-tab" class="tab-content">
+            <!-- Week Tasks -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-icon">📋</span>
+                    <span class="section-title">Tarefas da Semana</span>
+                    <span class="section-subtitle">Máximo 7</span>
+                </div>
+                <div id="weekTasks">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+
+            <!-- Week Blocked -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-icon">🚫</span>
+                    <span class="section-title">Blocked Esta Semana</span>
+                    <span class="section-subtitle">Acessos, aprovações, dependências</span>
+                </div>
+                <div class="blocked-list" id="weekBlocked">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+
+            <!-- Week Brag -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-icon">🏆</span>
+                    <span class="section-title">Conquistas da Semana</span>
+                    <span class="section-subtitle">Brag Document</span>
+                </div>
+                <div class="brag-list">
+                    <div class="brag-item">
+                        <span class="brag-num">1.</span>
+                        <input type="text" class="brag-item-input" id="weekBrag1" placeholder="Primeira conquista..." oninput="saveData()">
+                    </div>
+                    <div class="brag-item">
+                        <span class="brag-num">2.</span>
+                        <input type="text" class="brag-item-input" id="weekBrag2" placeholder="Segunda conquista..." oninput="saveData()">
+                    </div>
+                    <div class="brag-item">
+                        <span class="brag-num">3.</span>
+                        <input type="text" class="brag-item-input" id="weekBrag3" placeholder="Terceira conquista..." oninput="saveData()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Checklist -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-icon">💬</span>
+                    <span class="section-title">Checklist de Comunicação</span>
+                </div>
+                <div class="checklist">
+                    <div class="checklist-item">
+                        <input type="checkbox" class="checklist-checkbox" id="checkComm1" onchange="saveData()">
+                        <label class="checklist-label" for="checkComm1">Dei pelo menos 1 devolutiva parcial ao cliente</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" class="checklist-checkbox" id="checkComm2" onchange="saveData()">
+                        <label class="checklist-label" for="checkComm2">Sinalizei impedimentos/atrasos com antecedência</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" class="checklist-checkbox" id="checkComm3" onchange="saveData()">
+                        <label class="checklist-label" for="checkComm3">Pedi ajuda quando travei (antes de 30 min)</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" class="checklist-checkbox" id="checkComm4" onchange="saveData()">
+                        <label class="checklist-label" for="checkComm4">Atualizei status no ClickUp</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reminder">
+                <span class="reminder-icon">💪</span>
+                "Você não precisa saber tudo. Levantar a mão é sinal de maturidade profissional."
+            </div>
+        </div>
+
+        <!-- Progress Tab -->
+        <div id="progress-tab" class="tab-content">
+            <!-- Stats -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-icon">📊</span>
+                    <span class="section-title">Estatísticas</span>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statDays">0</div>
+                        <div class="stat-label">Dias preenchidos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statTasks">0</div>
+                        <div class="stat-label">Tarefas concluídas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statBrags">0</div>
+                        <div class="stat-label">Conquistas registradas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statStreak">0</div>
+                        <div class="stat-label">Sequência atual</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-icon">📅</span>
+                    <span class="section-title">Calendário</span>
+                </div>
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button class="calendar-nav" onclick="changeMonth(-1)">‹</button>
+                        <span class="calendar-month" id="calendarMonth"></span>
+                        <button class="calendar-nav" onclick="changeMonth(1)">›</button>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- Generated by JS -->
+                    </div>
+                    <div class="calendar-legend">
+                        <div class="legend-item">
+                            <div class="legend-box" style="background: var(--hoje);"></div>
+                            <span>Dia preenchido</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-box" style="border: 2px dashed var(--semana-border);"></div>
+                            <span>Sexta (Brag + Backup)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-box" style="border: 2px solid var(--brag-border);"></div>
+                            <span>Revisão quinzenal</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quinzenal Review -->
+            <div class="section">
+                <div class="section-header">
+                    <span class="section-icon">🔍</span>
+                    <span class="section-title">Revisão Quinzenal</span>
+                    <span class="section-subtitle">Como estou evoluindo?</span>
+                </div>
+                
+                <div class="review-card">
+                    <div class="review-header">
+                        <span>📋</span>
+                        <span class="review-title">Autoavaliação dos Pontos de Feedback</span>
+                        <span class="review-date" id="reviewDate"></span>
+                    </div>
+
+                    <!-- Feedback 1: Autonomia -->
+                    <div class="feedback-item">
+                        <div class="feedback-label">
+                            <span>🎯</span> Autonomia
+                        </div>
+                        <div class="feedback-description">
+                            Tomar decisões dentro do escopo, ser "dona" das atividades
+                        </div>
+                        <div class="rating-container">
+                            <span class="rating-label">Minha nota:</span>
+                            <div class="rating-buttons" id="ratingAutonomia">
+                                <button class="rating-btn" onclick="setRating('autonomia', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('autonomia', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('autonomia', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('autonomia', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('autonomia', 5)">5</button>
+                            </div>
+                        </div>
+                        <textarea class="feedback-notes" id="notesAutonomia" placeholder="O que fiz bem? O que posso melhorar?" oninput="saveReviewDraft()"></textarea>
+                    </div>
+
+                    <!-- Feedback 2: Comunicação -->
+                    <div class="feedback-item">
+                        <div class="feedback-label">
+                            <span>💬</span> Comunicação
+                        </div>
+                        <div class="feedback-description">
+                            Dar devolutivas parciais, atualizar cliente sobre progresso
+                        </div>
+                        <div class="rating-container">
+                            <span class="rating-label">Minha nota:</span>
+                            <div class="rating-buttons" id="ratingComunicacao">
+                                <button class="rating-btn" onclick="setRating('comunicacao', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('comunicacao', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('comunicacao', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('comunicacao', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('comunicacao', 5)">5</button>
+                            </div>
+                        </div>
+                        <textarea class="feedback-notes" id="notesComunicacao" placeholder="O que fiz bem? O que posso melhorar?" oninput="saveReviewDraft()"></textarea>
+                    </div>
+
+                    <!-- Feedback 3: Negociação -->
+                    <div class="feedback-item">
+                        <div class="feedback-label">
+                            <span>🤝</span> Negociação
+                        </div>
+                        <div class="feedback-description">
+                            Sinalizar impedimentos com antecedência, renegociar prazos
+                        </div>
+                        <div class="rating-container">
+                            <span class="rating-label">Minha nota:</span>
+                            <div class="rating-buttons" id="ratingNegociacao">
+                                <button class="rating-btn" onclick="setRating('negociacao', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('negociacao', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('negociacao', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('negociacao', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('negociacao', 5)">5</button>
+                            </div>
+                        </div>
+                        <textarea class="feedback-notes" id="notesNegociacao" placeholder="O que fiz bem? O que posso melhorar?" oninput="saveReviewDraft()"></textarea>
+                    </div>
+
+                    <!-- Feedback 4: Autoconfiança -->
+                    <div class="feedback-item">
+                        <div class="feedback-label">
+                            <span>💪</span> Autoconfiança
+                        </div>
+                        <div class="feedback-description">
+                            Consolidar-se como referência técnica, confiar no próprio conhecimento
+                        </div>
+                        <div class="rating-container">
+                            <span class="rating-label">Minha nota:</span>
+                            <div class="rating-buttons" id="ratingAutoconfianca">
+                                <button class="rating-btn" onclick="setRating('autoconfianca', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('autoconfianca', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('autoconfianca', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('autoconfianca', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('autoconfianca', 5)">5</button>
+                            </div>
+                        </div>
+                        <textarea class="feedback-notes" id="notesAutoconfianca" placeholder="O que fiz bem? O que posso melhorar?" oninput="saveReviewDraft()"></textarea>
+                    </div>
+
+                    <!-- Feedback 5: Postura Consultiva -->
+                    <div class="feedback-item">
+                        <div class="feedback-label">
+                            <span>🎓</span> Postura Consultiva
+                        </div>
+                        <div class="feedback-description">
+                            Posicionamento proativo com cliente, não apenas reativo
+                        </div>
+                        <div class="rating-container">
+                            <span class="rating-label">Minha nota:</span>
+                            <div class="rating-buttons" id="ratingConsultiva">
+                                <button class="rating-btn" onclick="setRating('consultiva', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('consultiva', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('consultiva', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('consultiva', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('consultiva', 5)">5</button>
+                            </div>
+                        </div>
+                        <textarea class="feedback-notes" id="notesConsultiva" placeholder="O que fiz bem? O que posso melhorar?" oninput="saveReviewDraft()"></textarea>
+                    </div>
+
+                    <button class="save-review-btn" onclick="saveReview()">
+                        💾 Salvar Revisão Quinzenal
+                    </button>
+                </div>
+
+                <!-- Review History -->
+                <div class="review-history" id="reviewHistory">
+                    <div class="section-header" style="border: none; padding: 0; margin-bottom: 15px;">
+                        <span class="section-icon">📜</span>
+                        <span class="section-title">Histórico de Revisões</span>
+                    </div>
+                    <div id="historyList">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="reminder">
+                <span class="reminder-icon">📈</span>
+                Progresso não é linear. Celebre as pequenas evoluções!
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Indicator -->
+    <div class="save-indicator" id="saveIndicator">✓ Salvo automaticamente</div>
+
+    <!-- Footer Actions -->
+    <div class="footer-actions">
+        <button class="footer-btn" onclick="exportData()">
+            📥 Exportar Backup
+        </button>
+        <button class="footer-btn" onclick="document.getElementById('importFile').click()">
+            📤 Importar Backup
+        </button>
+        <input type="file" id="importFile" class="hidden-input" accept=".json" onchange="importData(event)">
+        <button class="footer-btn danger" onclick="clearAllData()">
+            🗑️ Limpar Tudo
+        </button>
+    </div>
+    <div class="footer-info">
+        Seus dados ficam salvos apenas neste navegador. Use o backup para não perder!
+    </div>
+
+    <script>
+        // Speech Recognition
+        let recognition = null;
+        let isRecording = false;
+
+        // Initialize Speech Recognition
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'pt-BR';
+
+                recognition.onresult = (event) => {
+                    let finalTranscript = '';
+                    let interimTranscript = '';
+
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            finalTranscript += transcript + ' ';
+                        } else {
+                            interimTranscript += transcript;
+                        }
+                    }
+
+                    if (finalTranscript) {
+                        const brainDump = document.getElementById('brainDump');
+                        brainDump.value += finalTranscript;
+                        saveData();
+                    }
+
+                    document.getElementById('statusText').textContent = interimTranscript || 'Ouvindo...';
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    stopRecording();
+                    document.getElementById('statusText').textContent = 'Erro: ' + event.error;
+                };
+
+                recognition.onend = () => {
+                    if (isRecording) {
+                        recognition.start(); // Restart if still recording
+                    }
+                };
+            } else {
+                document.getElementById('recordBtn').style.display = 'none';
+                document.getElementById('statusText').textContent = 'Reconhecimento de voz não suportado neste navegador';
+            }
+        }
+
+        function toggleRecording() {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        }
+
+        function startRecording() {
+            if (recognition) {
+                isRecording = true;
+                recognition.start();
+                document.getElementById('recordBtn').classList.add('recording');
+                document.getElementById('recordIcon').textContent = '⏹️';
+                document.getElementById('recordText').textContent = 'Parar';
+                document.getElementById('audioStatus').classList.add('listening');
+                document.getElementById('statusText').textContent = 'Ouvindo...';
+            }
+        }
+
+        function stopRecording() {
+            if (recognition) {
+                isRecording = false;
+                recognition.stop();
+                document.getElementById('recordBtn').classList.remove('recording');
+                document.getElementById('recordIcon').textContent = '🎤';
+                document.getElementById('recordText').textContent = 'Falar';
+                document.getElementById('audioStatus').classList.remove('listening');
+                document.getElementById('statusText').textContent = 'Clique em Falar para usar voz';
+            }
+        }
+
+        function clearBrainDump() {
+            if (confirm('Limpar todo o brain dump?')) {
+                document.getElementById('brainDump').value = '';
+                saveData();
+            }
+        }
+
+        // Tab switching
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+            document.getElementById(`${tab}-tab`).classList.add('active');
+        }
+
+        // Task completion toggle
+        function toggleTaskComplete(num) {
+            const input = document.getElementById(`task${num}`);
+            const checkbox = document.getElementById(`check${num}`);
+            if (checkbox.checked) {
+                input.classList.add('completed');
+            } else {
+                input.classList.remove('completed');
+            }
+        }
+
+        // Generate week tasks
+        function generateWeekTasks() {
+            const container = document.getElementById('weekTasks');
+            let html = '';
+            for (let i = 1; i <= 7; i++) {
+                html += `
+                    <div class="week-task-item">
+                        <div class="week-task-num">${i}</div>
+                        <input type="text" class="week-task-input" id="weekTask${i}" placeholder="Tarefa ${i}..." oninput="saveData()">
+                        <input type="date" class="week-task-date" id="weekTaskDate${i}" oninput="saveData()">
+                        <input type="checkbox" class="task-checkbox" id="weekCheck${i}" onchange="saveData()">
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        // Generate week blocked items
+        function generateWeekBlocked() {
+            const container = document.getElementById('weekBlocked');
+            let html = '';
+            for (let i = 1; i <= 4; i++) {
+                html += `
+                    <div class="blocked-item">
+                        <input type="text" class="blocked-input" id="weekBlocked${i}" placeholder="Item blocked..." oninput="saveData()">
+                        <input type="text" class="blocked-input who" id="weekBlockedWho${i}" placeholder="Responsável" oninput="saveData()">
+                        <input type="date" class="week-task-date" id="weekBlockedDate${i}" title="Acionei em" oninput="saveData()">
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        // Update date display
+        function updateDateDisplay() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateStr = now.toLocaleDateString('pt-BR', options);
+            document.getElementById('dateDisplay').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            const data = {
+                date: new Date().toDateString(),
+                brainDump: document.getElementById('brainDump').value,
+                task1: document.getElementById('task1').value,
+                task2: document.getElementById('task2').value,
+                task3: document.getElementById('task3').value,
+                check1: document.getElementById('check1').checked,
+                check2: document.getElementById('check2').checked,
+                check3: document.getElementById('check3').checked,
+                postit: document.getElementById('postit').value,
+                blocked1: document.getElementById('blocked1').value,
+                blockedWho1: document.getElementById('blockedWho1').value,
+                blocked2: document.getElementById('blocked2').value,
+                blockedWho2: document.getElementById('blockedWho2').value,
+                blocked3: document.getElementById('blocked3').value,
+                blockedWho3: document.getElementById('blockedWho3').value,
+                bragDaily: document.getElementById('bragDaily').value,
+                // Weekly data
+                weekBrag1: document.getElementById('weekBrag1').value,
+                weekBrag2: document.getElementById('weekBrag2').value,
+                weekBrag3: document.getElementById('weekBrag3').value,
+                checkComm1: document.getElementById('checkComm1').checked,
+                checkComm2: document.getElementById('checkComm2').checked,
+                checkComm3: document.getElementById('checkComm3').checked,
+                checkComm4: document.getElementById('checkComm4').checked,
+            };
+
+            // Save week tasks
+            for (let i = 1; i <= 7; i++) {
+                data[`weekTask${i}`] = document.getElementById(`weekTask${i}`).value;
+                data[`weekTaskDate${i}`] = document.getElementById(`weekTaskDate${i}`).value;
+                data[`weekCheck${i}`] = document.getElementById(`weekCheck${i}`).checked;
+            }
+
+            // Save week blocked
+            for (let i = 1; i <= 4; i++) {
+                data[`weekBlocked${i}`] = document.getElementById(`weekBlocked${i}`).value;
+                data[`weekBlockedWho${i}`] = document.getElementById(`weekBlockedWho${i}`).value;
+                data[`weekBlockedDate${i}`] = document.getElementById(`weekBlockedDate${i}`).value;
+            }
+
+            localStorage.setItem('meuDiaSara', JSON.stringify(data));
+            showSaveIndicator();
+        }
+
+        // Load data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('meuDiaSara');
+            if (saved) {
+                const data = JSON.parse(saved);
+                
+                // Check if it's a new day - reset daily data but keep weekly
+                const today = new Date().toDateString();
+                const isNewDay = data.date !== today;
+
+                if (!isNewDay) {
+                    // Load daily data
+                    document.getElementById('brainDump').value = data.brainDump || '';
+                    document.getElementById('task1').value = data.task1 || '';
+                    document.getElementById('task2').value = data.task2 || '';
+                    document.getElementById('task3').value = data.task3 || '';
+                    document.getElementById('check1').checked = data.check1 || false;
+                    document.getElementById('check2').checked = data.check2 || false;
+                    document.getElementById('check3').checked = data.check3 || false;
+                    document.getElementById('postit').value = data.postit || '';
+                    document.getElementById('blocked1').value = data.blocked1 || '';
+                    document.getElementById('blockedWho1').value = data.blockedWho1 || '';
+                    document.getElementById('blocked2').value = data.blocked2 || '';
+                    document.getElementById('blockedWho2').value = data.blockedWho2 || '';
+                    document.getElementById('blocked3').value = data.blocked3 || '';
+                    document.getElementById('blockedWho3').value = data.blockedWho3 || '';
+                    document.getElementById('bragDaily').value = data.bragDaily || '';
+
+                    // Update task completion styles
+                    for (let i = 1; i <= 3; i++) {
+                        toggleTaskComplete(i);
+                    }
+                }
+
+                // Always load weekly data
+                document.getElementById('weekBrag1').value = data.weekBrag1 || '';
+                document.getElementById('weekBrag2').value = data.weekBrag2 || '';
+                document.getElementById('weekBrag3').value = data.weekBrag3 || '';
+                document.getElementById('checkComm1').checked = data.checkComm1 || false;
+                document.getElementById('checkComm2').checked = data.checkComm2 || false;
+                document.getElementById('checkComm3').checked = data.checkComm3 || false;
+                document.getElementById('checkComm4').checked = data.checkComm4 || false;
+
+                // Load week tasks
+                for (let i = 1; i <= 7; i++) {
+                    document.getElementById(`weekTask${i}`).value = data[`weekTask${i}`] || '';
+                    document.getElementById(`weekTaskDate${i}`).value = data[`weekTaskDate${i}`] || '';
+                    document.getElementById(`weekCheck${i}`).checked = data[`weekCheck${i}`] || false;
+                }
+
+                // Load week blocked
+                for (let i = 1; i <= 4; i++) {
+                    document.getElementById(`weekBlocked${i}`).value = data[`weekBlocked${i}`] || '';
+                    document.getElementById(`weekBlockedWho${i}`).value = data[`weekBlockedWho${i}`] || '';
+                    document.getElementById(`weekBlockedDate${i}`).value = data[`weekBlockedDate${i}`] || '';
+                }
+            }
+        }
+
+        // Show save indicator
+        function showSaveIndicator() {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 1500);
+        }
+
+        // Export data to JSON file
+        function exportData() {
+            const saved = localStorage.getItem('meuDiaSara');
+            if (!saved) {
+                alert('Não há dados para exportar ainda!');
+                return;
+            }
+
+            const data = JSON.parse(saved);
+            data.exportDate = new Date().toISOString();
+            data.version = '1.0';
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const today = new Date().toISOString().split('T')[0];
+            const filename = `meu_dia_backup_${today}.json`;
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            alert(`✅ Backup salvo como "${filename}"\n\nGuarde este arquivo em local seguro!`);
+        }
+
+        // Import data from JSON file
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    // Validate that it looks like our data
+                    if (!data.date && !data.brainDump && !data.weekTask1) {
+                        throw new Error('Arquivo não parece ser um backup válido');
+                    }
+
+                    const confirmMsg = `Importar backup${data.exportDate ? ' de ' + new Date(data.exportDate).toLocaleDateString('pt-BR') : ''}?\n\nIsso vai SUBSTITUIR todos os dados atuais.`;
+                    
+                    if (confirm(confirmMsg)) {
+                        localStorage.setItem('meuDiaSara', JSON.stringify(data));
+                        location.reload(); // Reload to show imported data
+                    }
+                } catch (error) {
+                    alert('❌ Erro ao importar: ' + error.message + '\n\nVerifique se selecionou o arquivo correto.');
+                }
+            };
+            reader.readAsText(file);
+            
+            // Reset input so same file can be selected again
+            event.target.value = '';
+        }
+
+        // Clear all data
+        function clearAllData() {
+            const confirmMsg = '⚠️ ATENÇÃO!\n\nIsso vai apagar TODOS os seus dados:\n- Brain dump\n- Tarefas do dia\n- Tarefas da semana\n- Brag document\n- Tudo!\n\nTem certeza? (Considere exportar um backup antes)';
+            
+            if (confirm(confirmMsg)) {
+                if (confirm('Última chance! Realmente apagar tudo?')) {
+                    localStorage.removeItem('meuDiaSara');
+                    location.reload();
+                }
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDateDisplay();
+            generateWeekTasks();
+            generateWeekBlocked();
+            loadData();
+            initSpeechRecognition();
+            initCalendar();
+            checkReminders();
+            loadReviewDraft();
+            loadReviewHistory();
+            updateStats();
+        });
+
+        // Calendar variables
+        let currentCalendarDate = new Date();
+
+        // Initialize calendar
+        function initCalendar() {
+            renderCalendar();
+            updateReviewDate();
+        }
+
+        // Render calendar
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const monthLabel = document.getElementById('calendarMonth');
+            
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                               'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            monthLabel.textContent = `${monthNames[month]} ${year}`;
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDay = firstDay.getDay();
+            const daysInMonth = lastDay.getDate();
+
+            const today = new Date();
+            const todayStr = today.toDateString();
+
+            // Get history data
+            const history = JSON.parse(localStorage.getItem('meuDiaHistory') || '{}');
+            
+            // Get review dates
+            const reviews = JSON.parse(localStorage.getItem('meuDiaReviews') || '[]');
+            const reviewDates = reviews.map(r => new Date(r.date).toDateString());
+
+            let html = '';
+            
+            // Weekday headers
+            const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            weekdays.forEach(day => {
+                html += `<div class="calendar-weekday">${day}</div>`;
+            });
+
+            // Previous month days
+            const prevMonth = new Date(year, month, 0);
+            const prevDays = prevMonth.getDate();
+            for (let i = startDay - 1; i >= 0; i--) {
+                html += `<div class="calendar-day other-month">${prevDays - i}</div>`;
+            }
+
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dateStr = date.toDateString();
+                const dayOfWeek = date.getDay();
+                
+                let classes = ['calendar-day'];
+                let indicators = '';
+
+                // Check if today
+                if (dateStr === todayStr) {
+                    classes.push('today');
+                }
+
+                // Check if has data
+                if (history[dateStr]) {
+                    classes.push('has-data');
+                    indicators = '<div class="day-indicators">';
+                    if (history[dateStr].tasks) {
+                        indicators += '<div class="day-dot tasks"></div>';
+                    }
+                    if (history[dateStr].brag) {
+                        indicators += '<div class="day-dot brag"></div>';
+                    }
+                    indicators += '</div>';
+                }
+
+                // Check if Friday
+                if (dayOfWeek === 5) {
+                    classes.push('friday');
+                }
+
+                // Check if review day (every 15 days from a start date)
+                if (isReviewDay(date) || reviewDates.includes(dateStr)) {
+                    classes.push('review-day');
+                }
+
+                html += `<div class="${classes.join(' ')}">${day}${indicators}</div>`;
+            }
+
+            // Next month days
+            const remainingDays = 42 - (startDay + daysInMonth);
+            for (let i = 1; i <= remainingDays; i++) {
+                html += `<div class="calendar-day other-month">${i}</div>`;
+            }
+
+            grid.innerHTML = html;
+        }
+
+        // Change calendar month
+        function changeMonth(delta) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        // Check if date is a review day (every 15 days)
+        function isReviewDay(date) {
+            // Start from Jan 1, 2026 and check every 15 days
+            const startDate = new Date(2026, 0, 1);
+            const diffTime = date.getTime() - startDate.getTime();
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays >= 0 && diffDays % 15 === 0;
+        }
+
+        // Update review date display
+        function updateReviewDate() {
+            const today = new Date();
+            const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+            document.getElementById('reviewDate').textContent = today.toLocaleDateString('pt-BR', options);
+        }
+
+        // Check and show reminders
+        function checkReminders() {
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            const banner = document.getElementById('reminderBanner');
+            const icon = document.getElementById('reminderIcon');
+            const text = document.getElementById('reminderText');
+            const actionBtn = document.getElementById('reminderAction');
+
+            // Check if dismissed today
+            const dismissed = JSON.parse(localStorage.getItem('meuDiaDismissed') || '{}');
+            const todayStr = today.toDateString();
+
+            // Friday reminder (Brag + Backup)
+            if (dayOfWeek === 5 && !dismissed[todayStr + '_friday']) {
+                banner.style.display = 'flex';
+                banner.className = 'reminder-banner';
+                icon.textContent = '🏆';
+                text.textContent = 'Sexta-feira! Hora de preencher o Brag Document e fazer backup.';
+                actionBtn.textContent = 'Ir para Semana';
+                actionBtn.onclick = () => { switchTab('weekly'); dismissReminder('friday'); };
+                return;
+            }
+
+            // Review day reminder (every 15 days)
+            if (isReviewDay(today) && !dismissed[todayStr + '_review']) {
+                banner.style.display = 'flex';
+                banner.className = 'reminder-banner quinzenal';
+                icon.textContent = '🔍';
+                text.textContent = 'Revisão quinzenal! Como você está evoluindo nos pontos de feedback?';
+                actionBtn.textContent = 'Fazer Revisão';
+                actionBtn.onclick = () => { switchTab('progress'); dismissReminder('review'); };
+                return;
+            }
+
+            banner.style.display = 'none';
+        }
+
+        // Handle reminder action
+        function handleReminderAction() {
+            // Action is set dynamically in checkReminders
+        }
+
+        // Dismiss reminder
+        function dismissReminder(type) {
+            const today = new Date().toDateString();
+            const dismissed = JSON.parse(localStorage.getItem('meuDiaDismissed') || '{}');
+            if (type) {
+                dismissed[today + '_' + type] = true;
+            } else {
+                // Dismiss all for today
+                dismissed[today + '_friday'] = true;
+                dismissed[today + '_review'] = true;
+            }
+            localStorage.setItem('meuDiaDismissed', JSON.stringify(dismissed));
+            document.getElementById('reminderBanner').style.display = 'none';
+        }
+
+        // Rating system
+        let currentRatings = {
+            autonomia: 0,
+            comunicacao: 0,
+            negociacao: 0,
+            autoconfianca: 0,
+            consultiva: 0
+        };
+
+        function setRating(category, value) {
+            currentRatings[category] = value;
+            
+            // Update UI
+            const buttons = document.querySelectorAll(`#rating${capitalizeFirst(category)} .rating-btn`);
+            buttons.forEach((btn, index) => {
+                if (index < value) {
+                    btn.classList.add('selected');
+                } else {
+                    btn.classList.remove('selected');
+                }
+            });
+            
+            saveReviewDraft();
+        }
+
+        function capitalizeFirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        // Save review draft (auto-save)
+        function saveReviewDraft() {
+            const draft = {
+                ratings: currentRatings,
+                notes: {
+                    autonomia: document.getElementById('notesAutonomia').value,
+                    comunicacao: document.getElementById('notesComunicacao').value,
+                    negociacao: document.getElementById('notesNegociacao').value,
+                    autoconfianca: document.getElementById('notesAutoconfianca').value,
+                    consultiva: document.getElementById('notesConsultiva').value
+                }
+            };
+            localStorage.setItem('meuDiaReviewDraft', JSON.stringify(draft));
+        }
+
+        // Load review draft
+        function loadReviewDraft() {
+            const draft = JSON.parse(localStorage.getItem('meuDiaReviewDraft') || 'null');
+            if (draft) {
+                currentRatings = draft.ratings || currentRatings;
+                
+                // Restore ratings UI
+                Object.keys(currentRatings).forEach(category => {
+                    if (currentRatings[category] > 0) {
+                        setRating(category, currentRatings[category]);
+                    }
+                });
+                
+                // Restore notes
+                if (draft.notes) {
+                    Object.keys(draft.notes).forEach(category => {
+                        const el = document.getElementById(`notes${capitalizeFirst(category)}`);
+                        if (el) el.value = draft.notes[category] || '';
+                    });
+                }
+            }
+        }
+
+        // Save review
+        function saveReview() {
+            // Check if at least one rating is set
+            const hasRating = Object.values(currentRatings).some(r => r > 0);
+            if (!hasRating) {
+                alert('Por favor, dê pelo menos uma nota antes de salvar!');
+                return;
+            }
+
+            const review = {
+                date: new Date().toISOString(),
+                ratings: { ...currentRatings },
+                notes: {
+                    autonomia: document.getElementById('notesAutonomia').value,
+                    comunicacao: document.getElementById('notesComunicacao').value,
+                    negociacao: document.getElementById('notesNegociacao').value,
+                    autoconfianca: document.getElementById('notesAutoconfianca').value,
+                    consultiva: document.getElementById('notesConsultiva').value
+                }
+            };
+
+            // Save to reviews array
+            const reviews = JSON.parse(localStorage.getItem('meuDiaReviews') || '[]');
+            reviews.unshift(review); // Add to beginning
+            localStorage.setItem('meuDiaReviews', JSON.stringify(reviews));
+
+            // Clear draft
+            localStorage.removeItem('meuDiaReviewDraft');
+            
+            // Reset form
+            currentRatings = { autonomia: 0, comunicacao: 0, negociacao: 0, autoconfianca: 0, consultiva: 0 };
+            document.querySelectorAll('.rating-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelectorAll('.feedback-notes').forEach(el => el.value = '');
+
+            // Refresh
+            loadReviewHistory();
+            renderCalendar();
+            
+            alert('✅ Revisão quinzenal salva! Continue evoluindo! 💪');
+        }
+
+        // Load review history
+        function loadReviewHistory() {
+            const reviews = JSON.parse(localStorage.getItem('meuDiaReviews') || '[]');
+            const container = document.getElementById('historyList');
+
+            if (reviews.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Nenhuma revisão salva ainda.</p>';
+                return;
+            }
+
+            const categoryLabels = {
+                autonomia: '🎯 Autonomia',
+                comunicacao: '💬 Comunicação',
+                negociacao: '🤝 Negociação',
+                autoconfianca: '💪 Autoconfiança',
+                consultiva: '🎓 Consultiva'
+            };
+
+            let html = '';
+            reviews.slice(0, 5).forEach(review => { // Show last 5
+                const date = new Date(review.date);
+                const dateStr = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                
+                let scoresHtml = '';
+                Object.keys(review.ratings).forEach(category => {
+                    if (review.ratings[category] > 0) {
+                        scoresHtml += `<span class="history-score">${categoryLabels[category]}: ${review.ratings[category]}/5</span>`;
+                    }
+                });
+
+                html += `
+                    <div class="history-item">
+                        <div class="history-date">📅 ${dateStr}</div>
+                        <div class="history-scores">${scoresHtml}</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Update stats
+        function updateStats() {
+            const history = JSON.parse(localStorage.getItem('meuDiaHistory') || '{}');
+            const reviews = JSON.parse(localStorage.getItem('meuDiaReviews') || '[]');
+            
+            // Days filled
+            const daysCount = Object.keys(history).length;
+            document.getElementById('statDays').textContent = daysCount;
+
+            // Tasks completed
+            let tasksCount = 0;
+            Object.values(history).forEach(day => {
+                tasksCount += day.tasks || 0;
+            });
+            document.getElementById('statTasks').textContent = tasksCount;
+
+            // Brags
+            let bragsCount = 0;
+            Object.values(history).forEach(day => {
+                if (day.brag) bragsCount++;
+            });
+            document.getElementById('statBrags').textContent = bragsCount;
+
+            // Streak (consecutive days)
+            let streak = 0;
+            const today = new Date();
+            for (let i = 0; i < 365; i++) {
+                const checkDate = new Date(today);
+                checkDate.setDate(checkDate.getDate() - i);
+                if (history[checkDate.toDateString()]) {
+                    streak++;
+                } else if (i > 0) {
+                    break;
+                }
+            }
+            document.getElementById('statStreak').textContent = streak;
+        }
+
+        // Enhanced save function to track history
+        const originalSaveData = saveData;
+        saveData = function() {
+            // Call original save
+            const data = {
+                date: new Date().toDateString(),
+                brainDump: document.getElementById('brainDump').value,
+                task1: document.getElementById('task1').value,
+                task2: document.getElementById('task2').value,
+                task3: document.getElementById('task3').value,
+                check1: document.getElementById('check1').checked,
+                check2: document.getElementById('check2').checked,
+                check3: document.getElementById('check3').checked,
+                postit: document.getElementById('postit').value,
+                blocked1: document.getElementById('blocked1').value,
+                blockedWho1: document.getElementById('blockedWho1').value,
+                blocked2: document.getElementById('blocked2').value,
+                blockedWho2: document.getElementById('blockedWho2').value,
+                blocked3: document.getElementById('blocked3').value,
+                blockedWho3: document.getElementById('blockedWho3').value,
+                bragDaily: document.getElementById('bragDaily').value,
+                weekBrag1: document.getElementById('weekBrag1').value,
+                weekBrag2: document.getElementById('weekBrag2').value,
+                weekBrag3: document.getElementById('weekBrag3').value,
+                checkComm1: document.getElementById('checkComm1').checked,
+                checkComm2: document.getElementById('checkComm2').checked,
+                checkComm3: document.getElementById('checkComm3').checked,
+                checkComm4: document.getElementById('checkComm4').checked,
+            };
+
+            // Save week tasks
+            for (let i = 1; i <= 7; i++) {
+                data[`weekTask${i}`] = document.getElementById(`weekTask${i}`).value;
+                data[`weekTaskDate${i}`] = document.getElementById(`weekTaskDate${i}`).value;
+                data[`weekCheck${i}`] = document.getElementById(`weekCheck${i}`).checked;
+            }
+
+            // Save week blocked
+            for (let i = 1; i <= 4; i++) {
+                data[`weekBlocked${i}`] = document.getElementById(`weekBlocked${i}`).value;
+                data[`weekBlockedWho${i}`] = document.getElementById(`weekBlockedWho${i}`).value;
+                data[`weekBlockedDate${i}`] = document.getElementById(`weekBlockedDate${i}`).value;
+            }
+
+            localStorage.setItem('meuDiaSara', JSON.stringify(data));
+            
+            // Also save to history for calendar
+            const history = JSON.parse(localStorage.getItem('meuDiaHistory') || '{}');
+            const today = new Date().toDateString();
+            
+            const tasksCompleted = [data.check1, data.check2, data.check3].filter(Boolean).length;
+            const hasBrag = data.bragDaily && data.bragDaily.trim().length > 0;
+            const hasContent = data.brainDump || data.task1 || data.task2 || data.task3;
+            
+            if (hasContent) {
+                history[today] = {
+                    tasks: tasksCompleted,
+                    brag: hasBrag
+                };
+                localStorage.setItem('meuDiaHistory', JSON.stringify(history));
+            }
+
+            showSaveIndicator();
+            updateStats();
+            renderCalendar();
+        };
+    </script>
+</body>
+</html>
