@@ -377,6 +377,143 @@
             text-align: right;
         }
 
+        /* API Key Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .modal-icon {
+            font-size: 2em;
+        }
+
+        .modal-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--header);
+        }
+
+        .modal-text {
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--light-gray);
+            border-radius: 10px;
+            font-size: 0.95em;
+            font-family: monospace;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--header);
+        }
+
+        .modal-input.error {
+            border-color: #EF5350;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.cancel {
+            background: var(--light-gray);
+            border: none;
+            color: var(--text-muted);
+        }
+
+        .modal-btn.cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .modal-btn.save {
+            background: var(--header);
+            border: none;
+            color: white;
+        }
+
+        .modal-btn.save:hover {
+            background: var(--header-light);
+        }
+
+        .modal-hint {
+            font-size: 0.8em;
+            color: #9575CD;
+            margin-top: 10px;
+            padding: 10px;
+            background: #F3E5F5;
+            border-radius: 8px;
+        }
+
+        .api-config-btn {
+            background: none;
+            border: none;
+            color: #9575CD;
+            font-size: 0.8em;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-top: 5px;
+        }
+
+        .api-config-btn:hover {
+            color: #5E35B1;
+        }
+
         .audio-status {
             display: flex;
             align-items: center;
@@ -1290,6 +1427,7 @@
                             <!-- AI response will be inserted here -->
                         </div>
                         <div class="ai-memory-indicator" id="aiMemoryIndicator"></div>
+                        <button class="api-config-btn" onclick="openApiKeyModal()">⚙️ Configurar API</button>
                     </div>
                 </div>
             </div>
@@ -1661,6 +1799,34 @@
         </div>
     </div>
 
+    <!-- API Key Modal -->
+    <div class="modal-overlay" id="apiKeyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-icon">🔑</span>
+                <span class="modal-title">Configurar API do Claude</span>
+            </div>
+            <p class="modal-text">
+                Para usar a IA, cole sua chave de API da Anthropic abaixo. 
+                Ela fica salva apenas no seu navegador (ninguém mais tem acesso).
+            </p>
+            <input 
+                type="password" 
+                class="modal-input" 
+                id="apiKeyInput" 
+                placeholder="sk-ant-api03-..."
+            >
+            <div class="modal-hint">
+                💡 A chave começa com <code>sk-ant-</code> e fica salva localmente. 
+                Você pode alterar depois clicando em "⚙️ Configurar API".
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeApiKeyModal()">Cancelar</button>
+                <button class="modal-btn save" onclick="saveApiKey()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Save Indicator -->
     <div class="save-indicator" id="saveIndicator">✓ Salvo automaticamente</div>
 
@@ -1752,12 +1918,58 @@
             saveAIMemory(memory);
         }
 
+        // API Key Management
+        function getApiKey() {
+            return localStorage.getItem('meuDiaApiKey');
+        }
+
+        function openApiKeyModal() {
+            const modal = document.getElementById('apiKeyModal');
+            const input = document.getElementById('apiKeyInput');
+            const currentKey = getApiKey();
+            if (currentKey) {
+                // Show masked version
+                input.value = currentKey.substring(0, 10) + '...' + currentKey.substring(currentKey.length - 4);
+                input.placeholder = 'Cole uma nova chave para substituir';
+            }
+            modal.classList.add('show');
+        }
+
+        function closeApiKeyModal() {
+            document.getElementById('apiKeyModal').classList.remove('show');
+            document.getElementById('apiKeyInput').value = '';
+            document.getElementById('apiKeyInput').classList.remove('error');
+        }
+
+        function saveApiKey() {
+            const input = document.getElementById('apiKeyInput');
+            const key = input.value.trim();
+            
+            // Validate key format
+            if (!key.startsWith('sk-ant-')) {
+                input.classList.add('error');
+                alert('A chave deve começar com "sk-ant-". Verifique se copiou corretamente.');
+                return;
+            }
+
+            localStorage.setItem('meuDiaApiKey', key);
+            closeApiKeyModal();
+            alert('✅ Chave salva com sucesso! Agora você pode usar a IA.');
+        }
+
         // Organize with AI
         async function organizeWithAI() {
             const brainDump = document.getElementById('brainDump').value.trim();
             
             if (!brainDump) {
                 alert('Escreva ou fale algo no Brain Dump primeiro!');
+                return;
+            }
+
+            // Check for API key
+            const apiKey = getApiKey();
+            if (!apiKey) {
+                openApiKeyModal();
                 return;
             }
 
@@ -1842,17 +2054,29 @@ FORMATO DE RESPOSTA (use exatamente esta estrutura):
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01',
+                        'anthropic-dangerous-direct-browser-access': 'true'
                     },
                     body: JSON.stringify({
                         model: 'claude-sonnet-4-20250514',
                         max_tokens: 1000,
+                        system: systemPrompt,
                         messages: [{
                             role: 'user',
                             content: `BRAIN DUMP DE HOJE:\n${brainDump}\n\n${currentTasks ? `TAREFAS JÁ LISTADAS: ${currentTasks}` : ''}\n\nMe ajude a organizar meu dia.`
-                        }],
-                        system: systemPrompt
+                        }]
                     })
                 });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    if (response.status === 401) {
+                        localStorage.removeItem('meuDiaApiKey');
+                        throw new Error('Chave de API inválida. Por favor, configure novamente.');
+                    }
+                    throw new Error(errorData.error?.message || 'Erro na API');
+                }
 
                 const data = await response.json();
                 
@@ -1887,10 +2111,9 @@ FORMATO DE RESPOSTA (use exatamente esta estrutura):
                     <div class="ai-insight">
                         <span class="ai-insight-icon">⚠️</span>
                         <div>
-                            <strong>Ops! Não consegui processar agora.</strong><br>
-                            <small>Erro: ${error.message}</small><br><br>
-                            <small>Dica: Se estiver usando localmente, a funcionalidade de IA só funciona quando hospedado no Claude.ai como artifact. 
-                            No GitHub Pages, você precisaria adicionar sua própria chave de API.</small>
+                            <strong>Ops! Não consegui processar.</strong><br>
+                            <small>${error.message}</small><br><br>
+                            ${error.message.includes('inválida') ? '<button class="modal-btn save" onclick="openApiKeyModal()" style="margin-top:10px;">🔑 Configurar API novamente</button>' : ''}
                         </div>
                     </div>
                 `;
