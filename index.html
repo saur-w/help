@@ -209,6 +209,174 @@
             background: #e0e0e0;
         }
 
+        /* AI Assistant */
+        .ai-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #7E57C2, #5E35B1);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ai-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(126, 87, 194, 0.4);
+        }
+
+        .ai-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .ai-btn.loading {
+            background: linear-gradient(135deg, #9575CD, #7E57C2);
+        }
+
+        .ai-btn.loading::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .ai-response {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #F3E5F5, #E1BEE7);
+            border-radius: 12px;
+            border-left: 4px solid #7E57C2;
+            display: none;
+        }
+
+        .ai-response.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ai-response-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(126, 87, 194, 0.3);
+        }
+
+        .ai-response-title {
+            font-weight: 700;
+            color: #5E35B1;
+        }
+
+        .ai-response-content {
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .ai-response-content h4 {
+            color: #5E35B1;
+            margin: 15px 0 8px 0;
+            font-size: 1em;
+        }
+
+        .ai-response-content ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .ai-response-content li {
+            margin: 5px 0;
+        }
+
+        .ai-suggestion {
+            background: white;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .ai-suggestion:hover {
+            border-color: #7E57C2;
+            transform: translateX(5px);
+        }
+
+        .ai-suggestion-icon {
+            font-size: 1.2em;
+        }
+
+        .ai-suggestion-text {
+            flex: 1;
+        }
+
+        .ai-suggestion-action {
+            font-size: 0.8em;
+            color: #7E57C2;
+            font-weight: 600;
+        }
+
+        .ai-insight {
+            background: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin: 10px 0;
+            font-size: 0.9em;
+            color: #5E35B1;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .ai-insight-icon {
+            font-size: 1.1em;
+        }
+
+        .ai-close-btn {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            color: #9575CD;
+            margin-left: auto;
+            padding: 5px;
+        }
+
+        .ai-close-btn:hover {
+            color: #5E35B1;
+        }
+
+        .ai-memory-indicator {
+            font-size: 0.75em;
+            color: #9575CD;
+            margin-top: 10px;
+            text-align: right;
+        }
+
         .audio-status {
             display: flex;
             align-items: center;
@@ -1098,13 +1266,30 @@
                             <span id="recordIcon">🎤</span>
                             <span id="recordText">Falar</span>
                         </button>
+                        <button class="ai-btn" id="aiBtn" onclick="organizeWithAI()">
+                            <span>✨</span>
+                            <span id="aiButtonText">Organizar com IA</span>
+                        </button>
                         <button class="audio-btn clear" onclick="clearBrainDump()">
                             🗑️ Limpar
                         </button>
-                        <div class="audio-status" id="audioStatus">
-                            <span>🎙️</span>
-                            <span id="statusText">Clique em Falar para usar voz</span>
+                    </div>
+                    <div class="audio-status" id="audioStatus">
+                        <span>🎙️</span>
+                        <span id="statusText">Clique em Falar para usar voz</span>
+                    </div>
+                    
+                    <!-- AI Response Area -->
+                    <div class="ai-response" id="aiResponse">
+                        <div class="ai-response-header">
+                            <span>🤖</span>
+                            <span class="ai-response-title">Assistente Sara</span>
+                            <button class="ai-close-btn" onclick="closeAIResponse()">✕</button>
                         </div>
+                        <div class="ai-response-content" id="aiResponseContent">
+                            <!-- AI response will be inserted here -->
+                        </div>
+                        <div class="ai-memory-indicator" id="aiMemoryIndicator"></div>
                     </div>
                 </div>
             </div>
@@ -1500,6 +1685,323 @@
         // Speech Recognition
         let recognition = null;
         let isRecording = false;
+
+        // AI Memory System
+        const AI_CONTEXT = {
+            nome: "Sara",
+            cargo: "Engenheira de Dados Pleno II",
+            empresa: "DP6",
+            projeto: "Bradesco - Source of Truth (enriquecimento de dados no Data Warehouse)",
+            situacao: "Em programa de desenvolvimento (PIP) com foco em certificação GCP e soft skills",
+            pontosDesenvolvimento: [
+                { area: "Autonomia", descricao: "Tomar decisões dentro do escopo, ser dona das atividades" },
+                { area: "Comunicação", descricao: "Dar devolutivas parciais mesmo sem conclusão, atualizar cliente sobre progresso" },
+                { area: "Negociação", descricao: "Sinalizar impedimentos com antecedência, renegociar prazos proativamente" },
+                { area: "Autoconfiança", descricao: "Consolidar-se como referência técnica, confiar no próprio conhecimento" },
+                { area: "Postura Consultiva", descricao: "Posicionamento proativo com cliente, não apenas reativo" }
+            ],
+            caracteristicas: [
+                "Tem TDAH - funciona melhor com foco em uma coisa de cada vez",
+                "Aprende melhor visualmente",
+                "Tende a pensar em muitas coisas ao mesmo tempo e esgotar energia",
+                "Às vezes tem dificuldade em pedir ajuda por medo de parecer que não sabe",
+                "Rende melhor pela manhã"
+            ],
+            metasCertificacao: "GCP Professional Data Engineer até março/2026"
+        };
+
+        // Load and save AI memory
+        function loadAIMemory() {
+            return JSON.parse(localStorage.getItem('meuDiaAIMemory') || JSON.stringify({
+                patterns: [],
+                insights: [],
+                lastInteractions: [],
+                totalInteractions: 0
+            }));
+        }
+
+        function saveAIMemory(memory) {
+            localStorage.setItem('meuDiaAIMemory', JSON.stringify(memory));
+        }
+
+        // Add pattern to memory
+        function addPattern(pattern) {
+            const memory = loadAIMemory();
+            memory.patterns.push({
+                pattern: pattern,
+                date: new Date().toISOString()
+            });
+            // Keep last 20 patterns
+            if (memory.patterns.length > 20) {
+                memory.patterns = memory.patterns.slice(-20);
+            }
+            saveAIMemory(memory);
+        }
+
+        // Add insight to memory
+        function addInsight(insight) {
+            const memory = loadAIMemory();
+            memory.insights.push({
+                insight: insight,
+                date: new Date().toISOString()
+            });
+            // Keep last 10 insights
+            if (memory.insights.length > 10) {
+                memory.insights = memory.insights.slice(-10);
+            }
+            saveAIMemory(memory);
+        }
+
+        // Organize with AI
+        async function organizeWithAI() {
+            const brainDump = document.getElementById('brainDump').value.trim();
+            
+            if (!brainDump) {
+                alert('Escreva ou fale algo no Brain Dump primeiro!');
+                return;
+            }
+
+            const aiBtn = document.getElementById('aiBtn');
+            const aiButtonText = document.getElementById('aiButtonText');
+            const aiResponse = document.getElementById('aiResponse');
+            const aiResponseContent = document.getElementById('aiResponseContent');
+            
+            // Show loading state
+            aiBtn.disabled = true;
+            aiBtn.classList.add('loading');
+            aiButtonText.textContent = 'Analisando...';
+
+            try {
+                const memory = loadAIMemory();
+                memory.totalInteractions++;
+                
+                // Build context with memory
+                const memoryContext = memory.patterns.length > 0 
+                    ? `\n\nPadrões observados anteriormente:\n${memory.patterns.slice(-5).map(p => `- ${p.pattern}`).join('\n')}`
+                    : '';
+                
+                const insightsContext = memory.insights.length > 0
+                    ? `\n\nInsights anteriores sobre Sara:\n${memory.insights.slice(-3).map(i => `- ${i.insight}`).join('\n')}`
+                    : '';
+
+                // Get current tasks if any
+                const currentTasks = [
+                    document.getElementById('task1').value,
+                    document.getElementById('task2').value,
+                    document.getElementById('task3').value
+                ].filter(t => t.trim()).join(', ');
+
+                const systemPrompt = `Você é um assistente pessoal de produtividade da ${AI_CONTEXT.nome}, uma ${AI_CONTEXT.cargo} na ${AI_CONTEXT.empresa}.
+
+CONTEXTO SOBRE SARA:
+- Projeto atual: ${AI_CONTEXT.projeto}
+- Situação: ${AI_CONTEXT.situacao}
+- Meta: ${AI_CONTEXT.metasCertificacao}
+
+PONTOS DE DESENVOLVIMENTO (PIP):
+${AI_CONTEXT.pontosDesenvolvimento.map(p => `- ${p.area}: ${p.descricao}`).join('\n')}
+
+CARACTERÍSTICAS PESSOAIS:
+${AI_CONTEXT.caracteristicas.map(c => `- ${c}`).join('\n')}
+${memoryContext}
+${insightsContext}
+
+SUA MISSÃO:
+1. Analisar o brain dump da Sara
+2. Identificar as 3 tarefas mais importantes para HOJE (priorizando pelo impacto nos pontos de desenvolvimento)
+3. Identificar o que está BLOCKED (dependências externas)
+4. Dar 1 dica personalizada conectada aos pontos de desenvolvimento dela
+5. Se identificar algum padrão de comportamento (positivo ou negativo), mencione gentilmente
+
+REGRAS:
+- Seja direto e prático (Sara tem TDAH e precisa de clareza)
+- Use linguagem acolhedora mas não paternalista
+- Sempre conecte sugestões aos pontos de desenvolvimento quando relevante
+- Lembre que pedir ajuda é sinal de maturidade, não fraqueza
+- Sugira UMA coisa de cada vez para o post-it mental
+
+FORMATO DE RESPOSTA (use exatamente esta estrutura):
+**🎯 TAREFAS DO DIA:**
+1. [tarefa mais importante - a que mais vai gerar alívio]
+2. [segunda tarefa]
+3. [terceira tarefa]
+
+**📌 POST-IT MENTAL (comece por):**
+[uma única tarefa para focar agora]
+
+**🚫 BLOCKED:**
+- [item blocked e quem/o que precisa acionar]
+
+**💡 DICA DO DIA:**
+[dica conectada aos pontos de desenvolvimento]
+
+**🔍 OBSERVAÇÃO:**
+[se identificou algum padrão ou insight, mencione aqui de forma gentil]`;
+
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 1000,
+                        messages: [{
+                            role: 'user',
+                            content: `BRAIN DUMP DE HOJE:\n${brainDump}\n\n${currentTasks ? `TAREFAS JÁ LISTADAS: ${currentTasks}` : ''}\n\nMe ajude a organizar meu dia.`
+                        }],
+                        system: systemPrompt
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.content && data.content[0]) {
+                    const aiText = data.content[0].text;
+                    
+                    // Parse and display response
+                    displayAIResponse(aiText);
+                    
+                    // Save interaction to memory
+                    memory.lastInteractions.push({
+                        date: new Date().toISOString(),
+                        brainDumpLength: brainDump.length,
+                        hadTasks: currentTasks.length > 0
+                    });
+                    if (memory.lastInteractions.length > 10) {
+                        memory.lastInteractions = memory.lastInteractions.slice(-10);
+                    }
+                    saveAIMemory(memory);
+                    
+                    // Update memory indicator
+                    document.getElementById('aiMemoryIndicator').textContent = 
+                        `🧠 Interação #${memory.totalInteractions} • Memória ativa`;
+                    
+                } else {
+                    throw new Error('Resposta inválida da API');
+                }
+
+            } catch (error) {
+                console.error('Erro na IA:', error);
+                aiResponseContent.innerHTML = `
+                    <div class="ai-insight">
+                        <span class="ai-insight-icon">⚠️</span>
+                        <div>
+                            <strong>Ops! Não consegui processar agora.</strong><br>
+                            <small>Erro: ${error.message}</small><br><br>
+                            <small>Dica: Se estiver usando localmente, a funcionalidade de IA só funciona quando hospedado no Claude.ai como artifact. 
+                            No GitHub Pages, você precisaria adicionar sua própria chave de API.</small>
+                        </div>
+                    </div>
+                `;
+                aiResponse.classList.add('show');
+            } finally {
+                aiBtn.disabled = false;
+                aiBtn.classList.remove('loading');
+                aiButtonText.textContent = 'Organizar com IA';
+            }
+        }
+
+        // Display AI response with interactive elements
+        function displayAIResponse(text) {
+            const aiResponse = document.getElementById('aiResponse');
+            const aiResponseContent = document.getElementById('aiResponseContent');
+            
+            // Parse the response and make it interactive
+            let html = text
+                // Convert headers
+                .replace(/\*\*🎯 TAREFAS DO DIA:\*\*/g, '<h4>🎯 TAREFAS DO DIA</h4>')
+                .replace(/\*\*📌 POST-IT MENTAL.*?\*\*/g, '<h4>📌 POST-IT MENTAL</h4>')
+                .replace(/\*\*🚫 BLOCKED:\*\*/g, '<h4>🚫 BLOCKED</h4>')
+                .replace(/\*\*💡 DICA DO DIA:\*\*/g, '<h4>💡 DICA DO DIA</h4>')
+                .replace(/\*\*🔍 OBSERVAÇÃO:\*\*/g, '<h4>🔍 OBSERVAÇÃO</h4>')
+                // Convert bold
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                // Convert line breaks
+                .replace(/\n/g, '<br>');
+
+            // Extract tasks for quick-add buttons
+            const taskMatches = text.match(/1\.\s*(.+?)(?=\n|2\.)/s);
+            const task2Matches = text.match(/2\.\s*(.+?)(?=\n|3\.)/s);
+            const task3Matches = text.match(/3\.\s*(.+?)(?=\n|$|\*)/s);
+            
+            const postitMatch = text.match(/POST-IT MENTAL.*?:\*\*\s*\n?(.+?)(?=\n\n|\*\*)/s);
+            
+            // Add quick action buttons
+            let actionsHtml = '<div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(126,87,194,0.3);">';
+            actionsHtml += '<strong style="color: #5E35B1; font-size: 0.9em;">⚡ Ações Rápidas:</strong>';
+            
+            if (taskMatches || task2Matches || task3Matches) {
+                actionsHtml += `
+                    <div class="ai-suggestion" onclick="applyAISuggestions()">
+                        <span class="ai-suggestion-icon">📋</span>
+                        <span class="ai-suggestion-text">Aplicar tarefas sugeridas</span>
+                        <span class="ai-suggestion-action">Clique →</span>
+                    </div>
+                `;
+            }
+            
+            if (postitMatch) {
+                const postitText = postitMatch[1].trim().replace(/<[^>]*>/g, '').substring(0, 100);
+                actionsHtml += `
+                    <div class="ai-suggestion" onclick="applyPostit('${postitText.replace(/'/g, "\\'")}')">
+                        <span class="ai-suggestion-icon">📌</span>
+                        <span class="ai-suggestion-text">Definir post-it mental</span>
+                        <span class="ai-suggestion-action">Clique →</span>
+                    </div>
+                `;
+            }
+            
+            actionsHtml += '</div>';
+            
+            aiResponseContent.innerHTML = html + actionsHtml;
+            
+            // Store parsed tasks for quick apply
+            window.aiSuggestedTasks = {
+                task1: taskMatches ? taskMatches[1].trim().replace(/\*\*/g, '').substring(0, 200) : '',
+                task2: task2Matches ? task2Matches[1].trim().replace(/\*\*/g, '').substring(0, 200) : '',
+                task3: task3Matches ? task3Matches[1].trim().replace(/\*\*/g, '').substring(0, 200) : ''
+            };
+            
+            aiResponse.classList.add('show');
+        }
+
+        // Apply AI suggestions to task fields
+        function applyAISuggestions() {
+            if (window.aiSuggestedTasks) {
+                if (window.aiSuggestedTasks.task1) {
+                    document.getElementById('task1').value = window.aiSuggestedTasks.task1;
+                }
+                if (window.aiSuggestedTasks.task2) {
+                    document.getElementById('task2').value = window.aiSuggestedTasks.task2;
+                }
+                if (window.aiSuggestedTasks.task3) {
+                    document.getElementById('task3').value = window.aiSuggestedTasks.task3;
+                }
+                saveData();
+                
+                // Visual feedback
+                const btn = event.target.closest('.ai-suggestion');
+                btn.style.background = '#E8F5E9';
+                btn.innerHTML = '<span class="ai-suggestion-icon">✅</span><span class="ai-suggestion-text">Tarefas aplicadas!</span>';
+            }
+        }
+
+        // Apply post-it suggestion
+        function applyPostit(text) {
+            document.getElementById('postit').value = text;
+            saveData();
+            
+            // Visual feedback
+            const btn = event.target.closest('.ai-suggestion');
+            btn.style.background = '#E8F5E9';
+            btn.innerHTML = '<span class="ai-suggestion-icon">✅</span><span class="ai-suggestion-text">Post-it definido!</span>';
+        }
+
+        // Close AI response
+        function closeAIResponse() {
+            document.getElementById('aiResponse').classList.remove('show');
+        }
 
         // Initialize Speech Recognition
         function initSpeechRecognition() {
