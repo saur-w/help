@@ -1,5 +1,6 @@
 
 # 📅 Meu Dia
+[Acesso: https://saur-w.github.io/help/]
 
 Um aplicativo web simples para organização diária e acompanhamento de evolução profissional. Desenvolvido para pessoas que precisam de uma ferramenta visual, focada e que funcione offline.
 
